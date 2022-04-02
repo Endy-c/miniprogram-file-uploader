@@ -1,6 +1,6 @@
 {
   "name": "evit-miniprogram-file-uploader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Evit uploader library for wechat miniprogram",
   "main": "dist/uploader.js",
   "scripts": {

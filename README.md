@@ -1,4 +1,4 @@
-# evit@miniprogram-file-uploader
+# evit-miniprogram-file-uploader
 
 小程序大文件上传库。
 
@@ -21,7 +21,7 @@
 通过 `npm` 安装
 
 ```bash
-npm i evit@miniprogram-file-uploader
+npm i evit-miniprogram-file-uploader
 ```
 
 ## 使用
