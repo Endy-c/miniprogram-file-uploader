@@ -1,5 +1,5 @@
 {
-  "name": "miniprogram-file-uploader",
+  "name": "evit@miniprogram-file-uploader",
   "version": "1.0.0",
   "description": "Uploader library for wechat miniprogram",
   "main": "dist/uploader.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wechat-miniprogram/miniprogram-file-uploader"
+    "url": "https://github.com/Endy-c/miniprogram-file-uploader"
   },
   "keywords": [
     "miniprogram",
@@ -21,7 +21,7 @@
     "big file",
     "upload"
   ],
-  "author": "sanfordsun",
+  "author": "endy@evit.net.cn",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.10.4",

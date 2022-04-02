@@ -1,4 +1,4 @@
-# miniprogram-file-uploader
+# evit@miniprogram-file-uploader
 
 小程序大文件上传库。
 
@@ -12,13 +12,16 @@
 * [x] 支持秒传，计算md5判断服务端是否已存在
 * [x] 支持进度、预估剩余时间、平均速度、出错自动重试
 * [x] 错误处理
+* [x] 优化分块验证判断
+* [x] verifyChunks和mergeChunks时合并config内header
+* [X] 处理verifyChunks结果适配evit后端  
 
 ## 安装
 
 通过 `npm` 安装
 
 ```bash
-npm i miniprogram-file-uploader
+npm i evit@miniprogram-file-uploader
 ```
 
 ## 使用

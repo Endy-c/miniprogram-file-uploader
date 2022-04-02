@@ -48,11 +48,12 @@ class Uploader {
     // step1: 计算 identifier
     try {
       Logger.time('[Uploader] generateIdentifier')
-      if (this.config.testChunks) {
-        this.identifier = await this.computeMD5()
-      } else {
-        this.identifier = this.generateIdentifier()
-      }
+      // if (this.config.testChunks) {
+      //   this.identifier = await this.computeMD5()
+      // } else {
+      //   this.identifier = this.generateIdentifier()
+      // }
+      this.identifier = await this.computeMD5()
       Logger.timeEnd('[Uploader] generateIdentifier')
       Logger.debug('generateIdentifier ', this.identifier)
     } catch (error) {
@@ -80,7 +81,7 @@ class Uploader {
       const {
         needUpload,
         uploadedChunks,
-      } = verifyResp.data
+      } = verifyResp.data.data
       Logger.info('verify uploaded chunks end')
       // 秒传逻辑
       // 找不到合成的文件
@@ -205,10 +206,13 @@ class Uploader {
       Logger.info('merge reqeust end')
       Logger.debug('mergeRequest', mergeErr, mergeResp)
       if (mergeErr) {
-        this.handleFail({
-          errCode: 20003,
-          errrMsg: mergeErr.errMsg
+        this.emit('fail', {
+          errCode: 501
         })
+        // this.handleFail({
+        //   errCode: 20003,
+        //   errrMsg: mergeErr.errMsg
+        // })
         return
       }
       Logger.info('upload file success')
@@ -228,6 +232,7 @@ class Uploader {
     this._uploadedSize = 0
 
     if (this.chunksQueue.length) {
+      Logger.info('has chunks queue')
       const maxConcurrency = this.config.maxConcurrency
       for (let i = 0; i < maxConcurrency; i++) {
         this.uploadChunk()
@@ -318,6 +323,7 @@ class Uploader {
       const index = chunksIndexNeedRead.shift()
       const position = index * chunkSize
       const length = Math.min(totalSize - position, chunkSize)
+      Logger.info(`in readFileChunk loop, i: ${i}, isFail: ${this.isFail}`)
       if (this.isFail) break
 
       readFileAsync({
@@ -485,13 +491,19 @@ class Uploader {
   async verifyRequest() {
     const {
       verifyUrl,
-      fileName
+      fileName,
+      chunkSize,
+      header
     } = this.config
     const verifyResp = await this._requestAsync({
       url: verifyUrl,
       data: {
         fileName,
-        identifier: this.identifier
+        identifier: this.identifier,
+        chunkSize
+      },
+      header: {
+        ...header,
       }
     })
     return verifyResp
@@ -500,13 +512,19 @@ class Uploader {
   async mergeRequest() {
     const {
       mergeUrl,
-      fileName
+      fileName,
+      query,
+      header
     } = this.config
     const mergeResp = await this._requestAsync({
       url: mergeUrl,
       data: {
         fileName,
-        identifier: this.identifier
+        identifier: this.identifier,
+        ...query
+      },
+      header: {
+        ...header
       }
     })
     return mergeResp

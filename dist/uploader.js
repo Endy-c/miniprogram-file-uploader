@@ -34,7 +34,7 @@ var logger = createCommonjsModule(function (module) {
 	var Logger = { };
 
 	// For those that are at home that are keeping score.
-	Logger.VERSION = "1.6.0";
+	Logger.VERSION = "1.6.1";
 
 	// Function which handles all incoming log messages.
 	var logHandler;
@@ -281,8 +281,11 @@ var logger = createCommonjsModule(function (module) {
 		Logger.setHandler(Logger.createDefaultHandler(options));
 	};
 
+	// Createa an alias to useDefaults to avoid reaking a react-hooks rule.
+	Logger.setDefaults = Logger.useDefaults;
+
 	// Export to popular environments boilerplate.
-	if ( module.exports) {
+	if (module.exports) {
 		module.exports = Logger;
 	}
 	else {
@@ -1034,7 +1037,7 @@ var config = {
   maxMemory: 100 * 1024 * 1024,
   query: '',
   header: {},
-  testChunks: false,
+  testChunks: true,
   chunkRetryInterval: 0,
   maxChunkRetries: 0,
   timeout: 10000,
@@ -1172,11 +1175,12 @@ class Uploader {
     // step1: 计算 identifier
     try {
       logger.time('[Uploader] generateIdentifier');
-      if (this.config.testChunks) {
-        this.identifier = await this.computeMD5();
-      } else {
-        this.identifier = this.generateIdentifier();
-      }
+      // if (this.config.testChunks) {
+      //   this.identifier = await this.computeMD5()
+      // } else {
+      //   this.identifier = this.generateIdentifier()
+      // }
+      this.identifier = await this.computeMD5();
       logger.timeEnd('[Uploader] generateIdentifier');
       logger.debug('generateIdentifier ', this.identifier);
     } catch (error) {
@@ -1204,7 +1208,7 @@ class Uploader {
       const {
         needUpload,
         uploadedChunks,
-      } = verifyResp.data;
+      } = verifyResp.data.data;
       logger.info('verify uploaded chunks end');
       // 秒传逻辑
       // 找不到合成的文件
@@ -1329,10 +1333,13 @@ class Uploader {
       logger.info('merge reqeust end');
       logger.debug('mergeRequest', mergeErr, mergeResp);
       if (mergeErr) {
-        this.handleFail({
-          errCode: 20003,
-          errrMsg: mergeErr.errMsg
+        this.emit('fail', {
+          errCode: 501
         });
+        // this.handleFail({
+        //   errCode: 20003,
+        //   errrMsg: mergeErr.errMsg
+        // })
         return
       }
       logger.info('upload file success');
@@ -1352,6 +1359,7 @@ class Uploader {
     this._uploadedSize = 0;
 
     if (this.chunksQueue.length) {
+      logger.info('has chunks queue');
       const maxConcurrency = this.config.maxConcurrency;
       for (let i = 0; i < maxConcurrency; i++) {
         this.uploadChunk();
@@ -1442,6 +1450,7 @@ class Uploader {
       const index = chunksIndexNeedRead.shift();
       const position = index * chunkSize;
       const length = Math.min(totalSize - position, chunkSize);
+      logger.info(`in readFileChunk loop, i: ${i}, isFail: ${this.isFail}`);
       if (this.isFail) break
 
       readFileAsync({
@@ -1609,13 +1618,19 @@ class Uploader {
   async verifyRequest() {
     const {
       verifyUrl,
-      fileName
+      fileName,
+      chunkSize,
+      header
     } = this.config;
     const verifyResp = await this._requestAsync({
       url: verifyUrl,
       data: {
         fileName,
-        identifier: this.identifier
+        identifier: this.identifier,
+        chunkSize
+      },
+      header: {
+        ...header,
       }
     });
     return verifyResp
@@ -1624,18 +1639,24 @@ class Uploader {
   async mergeRequest() {
     const {
       mergeUrl,
-      fileName
+      fileName,
+      query,
+      header
     } = this.config;
     const mergeResp = await this._requestAsync({
       url: mergeUrl,
       data: {
         fileName,
-        identifier: this.identifier
+        identifier: this.identifier,
+        ...query
+      },
+      header: {
+        ...header
       }
     });
     return mergeResp
   }
 }
 
-export default Uploader;
+export { Uploader as default };
 //# sourceMappingURL=uploader.js.map
